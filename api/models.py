@@ -21,8 +21,18 @@ class GodzinyPracy(models.Model):
     def czas_pracy(self):
         return round((self.zakonczenie - self.rozpoczecie).total_seconds() / 3600, 1)
 
+
 class WniosekUrlopowy(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    data_od = models.DateField()
-    data_do = models.DateField()
-    zatwierdzone = models.BooleanField(default=False)
+    STATUS_CHOICES = [
+        ('oczekuje', 'Oczekuje na zatwierdzenie'),
+        ('zatwierdzony', 'Zatwierdzony'),
+        ('odrzucony', 'Odrzucony'),
+    ]
+
+    pracownik = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wnioski')
+    wybrane_dni = models.JSONField(default=list)  # Przechowuje listę dni w formacie ["2025-06-01", "2025-06-15"]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='oczekuje')
+    data_utworzenia = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.pracownik.username} - {self.status}"

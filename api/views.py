@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.decorators import action
 from .models import GodzinyPracy, WniosekUrlopowy
@@ -19,6 +19,8 @@ User = get_user_model()
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
@@ -27,6 +29,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class GodzinyPracyViewSet(viewsets.ModelViewSet):
     queryset = GodzinyPracy.objects.all()
     serializer_class = GodzinyPracySerializer
+    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -42,9 +45,19 @@ class GodzinyPracyViewSet(viewsets.ModelViewSet):
             wyslij_powiadomienie_email(instance.user, "Twoje godziny pracy zostały zatwierdzone.")
 
 class WniosekUrlopowyViewSet(viewsets.ModelViewSet):
-    queryset = WniosekUrlopowy.objects.all()
+    queryset = WniosekUrlopowy.objects.all().order_by('-data_utworzenia')
     serializer_class = WniosekUrlopowySerializer
+    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(pracownik=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return WniosekUrlopowy.objects.all()
+        return WniosekUrlopowy.objects.filter(pracownik=user)
 
 
 class GrafikViewSet(viewsets.ViewSet):

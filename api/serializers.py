@@ -19,4 +19,5 @@ class GodzinyPracySerializer(serializers.ModelSerializer):
 class WniosekUrlopowySerializer(serializers.ModelSerializer):
     class Meta:
         model = WniosekUrlopowy
-        fields = '__all__'
+        fields = ['id', 'pracownik', 'wybrane_dni', 'status', 'data_utworzenia']
+        read_only_fields = ['pracownik', 'status', 'data_utworzenia']
