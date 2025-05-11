@@ -1,24 +1,20 @@
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action, api_view, permission_classes
-from .models import GodzinyPracy, WniosekUrlopowy, Profile
+from .models import GodzinyPracy, WniosekUrlopowy, Profile, User
 from .serializers import UserSerializer, GodzinyPracySerializer, WniosekUrlopowySerializer, ProfileSerializer
-from .permissions import IsAdminOrManagerCanEditDepartments
-from datetime import datetime
-
 import io
 import xlsxwriter
 from datetime import datetime
 from django.http import HttpResponse, JsonResponse
-from .models import GodzinyPracy, User
 from reportlab.pdfgen import canvas
 from django.core.mail import send_mail
 from rest_framework.exceptions import PermissionDenied
 
 User = get_user_model()
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -26,7 +22,6 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        # 🚫 Blokuj tworzenie użytkowników
         raise PermissionDenied("Nie można tworzyć użytkowników przez ten endpoint.")
 
     def update(self, request, *args, **kwargs):
@@ -66,10 +61,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
         raise PermissionDenied("Nie masz uprawnień do przypisania działu temu użytkownikowi.")
 
+
 class GodzinyPracyViewSet(viewsets.ModelViewSet):
     queryset = GodzinyPracy.objects.all()
     serializer_class = GodzinyPracySerializer
-    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -84,10 +79,10 @@ class GodzinyPracyViewSet(viewsets.ModelViewSet):
         if instance.zatwierdzone:
             wyslij_powiadomienie_email(instance.user, "Twoje godziny pracy zostały zatwierdzone.")
 
+
 class WniosekUrlopowyViewSet(viewsets.ModelViewSet):
     queryset = WniosekUrlopowy.objects.all().order_by('-data_utworzenia')
     serializer_class = WniosekUrlopowySerializer
-    # permission_classes = [IsAuthenticated, DjangoModelPermissions]
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -154,13 +149,12 @@ def parse_month_param(request):
 def get_target_user(request):
     user_id = request.GET.get("user_id")
 
-    # Jeśli brak user_id → zwracamy obecnego użytkownika
     if not user_id:
         return request.user, None
 
-    # Jeśli user_id podany → sprawdź uprawnienia
     if request.user.role not in ["admin", "kierownik"]:
-        return None, JsonResponse({"error": "Nie masz uprawnień do przeglądania danych innych użytkowników."}, status=403)
+        return None, JsonResponse({"error": "Nie masz uprawnień do przeglądania danych innych użytkowników."},
+                                  status=403)
 
     try:
         target_user = User.objects.get(id=user_id)
@@ -180,7 +174,9 @@ def eksport_excel(request):
 
     # Zakres miesiąca
     start = month_date.replace(day=1)
-    end = (start.replace(month=start.month % 12 + 1, year=start.year + (start.month // 12))) if start.month != 12 else start.replace(year=start.year + 1, month=1)
+    end = (start.replace(month=start.month % 12 + 1,
+                         year=start.year + (start.month // 12))) if start.month != 12 else start.replace(
+        year=start.year + 1, month=1)
 
     godziny = GodzinyPracy.objects.filter(user=target_user, rozpoczecie__gte=start, rozpoczecie__lt=end)
 
@@ -216,12 +212,15 @@ def eksport_pdf(request):
         return err
 
     start = month_date.replace(day=1)
-    end = (start.replace(month=start.month % 12 + 1, year=start.year + (start.month // 12))) if start.month != 12 else start.replace(year=start.year + 1, month=1)
+    end = (start.replace(month=start.month % 12 + 1,
+                         year=start.year + (start.month // 12))) if start.month != 12 else start.replace(
+        year=start.year + 1, month=1)
 
     godziny = GodzinyPracy.objects.filter(user=target_user, rozpoczecie__gte=start, rozpoczecie__lt=end)
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="grafik_{target_user.username}_{month_date.strftime("%Y_%m")}.pdf"'
+    response[
+        'Content-Disposition'] = f'attachment; filename="grafik_{target_user.username}_{month_date.strftime("%Y_%m")}.pdf"'
 
     p = canvas.Canvas(response)
     p.setFont("Helvetica", 12)
@@ -229,7 +228,8 @@ def eksport_pdf(request):
 
     y = 780
     for g in godziny:
-        p.drawString(100, y, f"{g.rozpoczecie.strftime('%Y-%m-%d %H:%M')} – {g.zakonczenie.strftime('%Y-%m-%d %H:%M')} ({'zatwierdzone' if g.zatwierdzone else 'oczekujące'})")
+        p.drawString(100, y,
+                     f"{g.rozpoczecie.strftime('%Y-%m-%d %H:%M')} – {g.zakonczenie.strftime('%Y-%m-%d %H:%M')} ({'zatwierdzone' if g.zatwierdzone else 'oczekujące'})")
         y -= 20
         if y < 50:
             p.showPage()
@@ -261,7 +261,6 @@ def user_profile_api(request):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        # Usuń 'dzial' z danych requesta, jeśli został przesłany
         request.data.pop('dzial', None)
         serializer = ProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
