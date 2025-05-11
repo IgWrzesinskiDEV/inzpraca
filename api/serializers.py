@@ -15,8 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         user = self.context.get('request').user
 
-        if user.role == 'kierownik':
-            # Kierownik może edytować tylko dział
+        if user.role == 'kierownik' or user.role == "admin":
             fields['username'].read_only = True
             fields['email'].read_only = True
             fields['role'].read_only = True

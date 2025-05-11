@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
-from datetime import timedelta
 
 ROLE_CHOICES = [
     ('admin', 'Admin'),
@@ -41,7 +40,7 @@ class WniosekUrlopowy(models.Model):
     ]
 
     pracownik = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wnioski')
-    wybrane_dni = models.JSONField(default=list)  # Przechowuje listę dni w formacie ["2025-06-01", "2025-06-15"]
+    wybrane_dni = models.JSONField(default=list)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='oczekuje')
     data_utworzenia = models.DateTimeField(auto_now_add=True)
 

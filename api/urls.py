@@ -14,6 +14,7 @@ router.register(r'godziny', GodzinyPracyViewSet)
 router.register(r'wnioski', WniosekUrlopowyViewSet)
 router.register(r'grafik', GrafikViewSet, basename='grafik')
 
+
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
 
@@ -23,7 +24,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', include(router.urls)),
 ]
-
 
 urlpatterns += [
     path('auth/login/', LoginView.as_view(), name='rest_login'),
