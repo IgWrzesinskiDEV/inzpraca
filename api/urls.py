@@ -1,18 +1,18 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import UserViewSet, GodzinyPracyViewSet, WniosekUrlopowyViewSet, eksport_excel, eksport_pdf, GrafikViewSet
+from .views import UserViewSet, GodzinyPracyViewSet, WniosekUrlopowyViewSet, eksport_excel, eksport_pdf, GrafikViewSet, \
+    user_profile_api
 from dj_rest_auth.views import LoginView, LogoutView
 from dj_rest_auth.registration.views import RegisterView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
+router.register(r'users', UserViewSet, basename='user')
 router.register(r'godziny', GodzinyPracyViewSet)
 router.register(r'wnioski', WniosekUrlopowyViewSet)
 router.register(r'grafik', GrafikViewSet, basename='grafik')
-
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
@@ -35,4 +35,8 @@ urlpatterns += [
 urlpatterns += [
     path('eksport/excel/', eksport_excel, name="eksport_excel"),
     path('eksport/pdf/', eksport_pdf, name="eksport_pdf"),
+]
+
+urlpatterns += [
+    path('profile/', user_profile_api, name='user_profile'),
 ]
