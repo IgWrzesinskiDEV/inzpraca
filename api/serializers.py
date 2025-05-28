@@ -13,17 +13,26 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        user = self.context.get('request').user
+        request = self.context.get('request', None)
 
-        if user.role == 'kierownik' or user.role == "admin":
-            fields['username'].read_only = True
-            fields['email'].read_only = True
-            fields['role'].read_only = True
-        elif user.role == 'pracownik':
-            for field in fields.values():
-                field.read_only = True
+        # When Swagger or unauthenticated access is generating the schema
+        if request is None or getattr(request, 'swagger_fake_view', False):
+            return fields
+
+        user = getattr(request, 'user', None)
+
+        # Check if user has 'role' attribute (not an AnonymousUser)
+        if hasattr(user, 'role'):
+            if user.role in ['kierownik', 'admin']:
+                fields['username'].read_only = True
+                fields['email'].read_only = True
+                fields['role'].read_only = True
+            elif user.role == 'pracownik':
+                for field in fields.values():
+                    field.read_only = True
 
         return fields
+
 
 class GodzinyPracySerializer(serializers.ModelSerializer):
     czas_pracy = serializers.FloatField(read_only=True)
@@ -31,6 +40,7 @@ class GodzinyPracySerializer(serializers.ModelSerializer):
     class Meta:
         model = GodzinyPracy
         fields = '__all__'
+
 
 class WniosekUrlopowySerializer(serializers.ModelSerializer):
     class Meta:

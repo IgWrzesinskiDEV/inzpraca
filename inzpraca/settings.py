@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     'celery',
 
     'api',
-
+    'drf_yasg',
+    
     'dj_rest_auth.registration',
     'rest_framework_simplejwt',
 ]
