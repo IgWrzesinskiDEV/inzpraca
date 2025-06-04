@@ -10,8 +10,15 @@ DEBUG = True
 ALLOWED_HOSTS = ['http://localhost:5173','http://127.0.0.1:5173', 'localhost', '127.0.0.1']
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    
     "http://127.0.0.1:5173",
 ]
+CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True  # Set to True in production with HTTPS
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+ # Set to True in production with HTTPS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -140,3 +147,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
