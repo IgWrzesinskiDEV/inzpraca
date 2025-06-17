@@ -14,8 +14,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True
-SESSION_COOKIE_SAMESITE = 'None'
+
+CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False
+
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
  # Set to True in production with HTTPS

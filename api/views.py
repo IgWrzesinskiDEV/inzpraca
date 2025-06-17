@@ -12,6 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from reportlab.pdfgen import canvas
 from django.core.mail import send_mail
 from rest_framework.exceptions import PermissionDenied
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 User = get_user_model()
 
@@ -267,3 +268,15 @@ def user_profile_api(request):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+def ping(request):
+    return JsonResponse({'result': 'OK'})

@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import UserViewSet, GodzinyPracyViewSet, WniosekUrlopowyViewSet, eksport_excel, eksport_pdf, GrafikViewSet, \
-    user_profile_api
+    user_profile_api,csrf,ping
 from dj_rest_auth.views import LoginView, LogoutView
 from dj_rest_auth.registration.views import RegisterView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
@@ -30,6 +30,8 @@ urlpatterns += [
     path('auth/logout/', LogoutView.as_view(), name='rest_logout'),
     path('auth/register/', RegisterView.as_view(), name='rest_register'),
     path('auth/google/', GoogleLogin.as_view(), name='google_login'),
+    path('csrf/', csrf),
+    path('ping/', ping),
 ]
 
 urlpatterns += [
